@@ -1,69 +1,82 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
-#include <SDL/SDL_mixer.h>
-#include <SDL/SDL_ttf.h>
 #include "intro.h"
+#include <stdio.h>
 
+void intro(GameContext *game) {
+  SDL_Texture *logo = load_texture(game, "resources/image/logo.png");
+  SDL_Texture *embleme = load_texture(game, "resources/image/embleme.png");
 
-void intro (SDL_Surface **ecran)
-{
-	*ecran = SDL_SetVideoMode (1366,768,32, SDL_HWSURFACE | SDL_DOUBLEBUF);
-	SDL_WM_SetCaption("KICCAS", NULL);
+  if (!logo || !embleme) {
+    printf("Failed to load intro images\n");
+    return;
+  }
 
-	SDL_Surface *logo=NULL, *embleme=NULL;
-	SDL_Rect poslogo;
-	poslogo.x=0;
-	poslogo.y=0;
-	int i=0;
-	SDL_Event event;
-	logo=IMG_Load ("resources/image/logo.png");
-	embleme=IMG_Load ("resources/image/embleme.png");
+  int alpha = 0;
+  SDL_Event event;
+  bool skip = false;
 
-	SDL_FillRect(*ecran, NULL, SDL_MapRGB((*ecran)->format, 0, 0, 0));
+  // Fade in Logo
+  while (alpha < 255 && !skip) {
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_QUIT ||
+          (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
+        skip = true;
+      }
+    }
 
-	
-	while (i!=128)
-	{
-		SDL_SetAlpha (logo, SDL_SRCALPHA, i);
-		SDL_BlitSurface(logo, NULL, (*ecran), &poslogo);
-		SDL_Flip(*ecran);
-		i++;
-		while (SDL_PollEvent(&event))
-		switch(event.type)
-		 {
-		 	case SDL_KEYDOWN:
-		 	switch (event.key.keysym.sym)
-		 	{
-		 		case SDLK_ESCAPE:
-		 		i=128;
-		 		break;
-		 	}
-		 }
-	}
-	
-	i=0;
-		while (i!=128)
-	{
-		SDL_SetAlpha (embleme, SDL_SRCALPHA, i);
-		SDL_BlitSurface(embleme, NULL,(*ecran), &poslogo);
-		SDL_Flip(*ecran);
-		i++;
-		while (SDL_PollEvent(&event))
-		switch(event.type)
-		{
-		 	case SDL_KEYDOWN:
-		 	switch (event.key.keysym.sym)
-		 	{
-		 		case SDLK_ESCAPE:
-		 		i=128;
-		 		break;
-		 	}
-		 }
-	}
+    SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
+    SDL_RenderClear(game->renderer);
 
-	SDL_FreeSurface(logo);
-	SDL_FreeSurface(embleme);
+    SDL_SetTextureAlphaMod(logo, alpha);
+    SDL_RenderCopy(game->renderer, logo, NULL, NULL);
+    SDL_RenderPresent(game->renderer);
 
+    alpha += 2;
+    SDL_Delay(10);
+  }
+
+  SDL_Delay(500);
+
+  // Fade out Logo
+  alpha = 255;
+  while (alpha > 0 && !skip) {
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_QUIT ||
+          (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
+        skip = true;
+      }
+    }
+    SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
+    SDL_RenderClear(game->renderer);
+    SDL_SetTextureAlphaMod(logo, alpha);
+    SDL_RenderCopy(game->renderer, logo, NULL, NULL);
+    SDL_RenderPresent(game->renderer);
+    alpha -= 5;
+    SDL_Delay(10);
+  }
+
+  // Fade in Embleme
+  alpha = 0;
+  while (alpha < 255 && !skip) {
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_QUIT ||
+          (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
+        skip = true;
+      }
+    }
+
+    SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
+    SDL_RenderClear(game->renderer);
+
+    SDL_SetTextureAlphaMod(embleme, alpha);
+    SDL_RenderCopy(game->renderer, embleme, NULL, NULL);
+    SDL_RenderPresent(game->renderer);
+
+    alpha += 2;
+    SDL_Delay(10);
+  }
+
+  SDL_Delay(500);
+
+  SDL_DestroyTexture(logo);
+  SDL_DestroyTexture(embleme);
 }

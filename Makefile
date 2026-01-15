@@ -1,16 +1,21 @@
-game : main.o intro.o fonctions.o option.o
-	gcc -o game main.o fonctions.o option.o -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf
+# Makefile for SDL2 (MacOS)
+CC = gcc
+# Include paths for Homebrew (Apple Silicon & Intel)
+INCLUDES = -I/opt/homebrew/include -I/usr/local/include
+CFLAGS = -Wall -g $(INCLUDES)
 
+# Library paths for Homebrew
+LIBS = -L/opt/homebrew/lib -L/usr/local/lib -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 
-main.o : main.c
-	gcc -o main.o -c main.c -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf
+OBJ = main.o game.o intro.o fonctions.o option.o puissance4.o levels.o
 
-fonctions.o : fonctions.c
-	gcc -o fonctions.o -c fonctions.c -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf
+all: game
 
-option.o : option.c
-	gcc -o option.o -c option.c -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf
+game: $(OBJ)
+	$(CC) -o $@ $^ $(LIBS)
+	
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-intro.o : intro.c
-	gcc -o intro.o -c intro.c -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf
-
+clean:
+	rm -f *.o game
